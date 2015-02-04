@@ -58,10 +58,10 @@ There is a `index.json` file next to all other files, which is a sorted list of 
 
 ## The Player
 
-This also includes a Javascript file which uses Javascript XMLHTTPRequests to fetch metadata for the screencasts and inserts a [[https://videojs.com|video.js]] player to a page.
+This also includes a Javascript file which uses Javascript XMLHTTPRequests to fetch metadata for the screencasts and inserts a [video.js](https://videojs.com) player to a page.
 Depends on JQuery.
 As reference URL, this script alway uses the index.json file. Usage:
 * `get_list(index_url)` to get the list as in `index.json`
 * `get_metadata(index_url, key)` to get the metadata of the screencast indentified by `key`
 * `insert_player(index_url, key, parent, width, height, video_js_options, video_ready_callback)` to insert a player.
- `height` and `width` may be empty or a number of pixels. `video_js_options` are [[https://github.com/videojs/video.js/blob/stable/docs/guides/options.md|video.js options]]. `video_ready_callback` is called when video.js has the video ready.
+ `height` and `width` may be empty or a number of pixels. `video_js_options` are [video.js options](https://github.com/videojs/video.js/blob/stable/docs/guides/options.md). `video_ready_callback` is called when video.js has the video ready.
