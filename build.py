@@ -125,6 +125,21 @@ def build_screencast(key, target_dir):
     #TODO: add downloads, tracks
     builder.build()
 
+def create_index(target_dir):
+    print "Creating screencast list..."
+    with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
+        list = json.loads(f.read())
+    res = []
+    for key in list:
+        screencast_root = os.path.join(basedir, "sources", key)
+        with open(os.path.join(screencast_root, "%s.json" % key), "r") as f:
+            descriptor = json.loads(f.read())
+        res.append({"key": key, "title": descriptor["title"], "description": descriptor["description"]})
+    with open(os.path.join(target_dir, "index.json"), "w+") as f:
+        f.write(json.dumps(res))
+    print "Done."
+
+
 
 
 def parseArgs():
@@ -132,15 +147,20 @@ def parseArgs():
                                      description="Converts videos, copies tracks and downloads, and puts them into a final format for the player",
                                      add_help=False)
     parser.add_argument('--help', action='help')
-    parser.add_argument("--screencast" , "-i", required=True, help="Screencast directory in sources")
+    parser.add_argument("--screencast" , "-i", required=False, help="Screencast directory in sources")
     parser.add_argument("--targetdir", "-t", required=True, help="The target directory. The output will be created in a subfolder specified via --i")
+    parser.add_argument("--create-index", "-c", help="Recreate the screencast index.", action="store_true", default=False)
     options = parser.parse_args()
     return options
 
 
 target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
 opts = parseArgs()
+print opts
 key = opts.screencast
 target_dir = opts.targetdir
-build_screencast(key, target_dir)
+if key:
+    build_screencast(key, target_dir)
+if opts.create_index:
+    create_index(target_dir)
 
