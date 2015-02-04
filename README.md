@@ -64,4 +64,4 @@ As reference URL, this script alway uses the index.json file. Usage:
 * `get_list(index_url)` to get the list as in `index.json`
 * `get_metadata(index_url, key)` to get the metadata of the screencast indentified by `key`
 * `insert_player(index_url, key, parent, width, height, video_js_options, video_ready_callback)` to insert a player.
- `height` and `width` may be empty or a number of pixels. `video_js_options` are [video.js options](https://github.com/videojs/video.js/blob/stable/docs/guides/options.md). `video_ready_callback` is called when video.js has the video ready.
+ `height` and `width` may be empty or a number of pixels. `video_js_options` are [video.js options](https://github.com/videojs/video.js/blob/stable/docs/guides/options.md). `video_ready_callback` is called when video.js has the video ready. `parent` is a JQuery DOM element which is already inserted in the document tree.
