@@ -38,10 +38,25 @@ for each screencast key, it creates a folder named `key` and a descriptor file n
               {"src": "basic.webm",
                "type": "video/webm"}
              ],
-  "tracks": [], #undefined
-  "downloads": [] #undefined
+  "tracks": [], #list of objects, which have html objects inside them, e.g. {"src":"subtitle.srt", "type": "caption", "srclang":"en", "label":"English"}
+  "downloads": [] #list of objects of form {"src": "example.tar.gz", "title":"Example archive"}
 }
 ```
-All media linked in the descriptor file is relative to its key directory.
+All files linked in the descriptor file are relative to the screencast's key directory.
 
-There is a `index.json` file next to all other files, which is a sorted list of all screencasts.
+There is a `index.json` file next to all other files, which is a sorted list of all screencasts:
+```
+[
+  {
+  'key': 'basic',
+  'title': 'title as in basic.json',
+  'description': 'description as in basic.json'
+  },
+  ....
+]
+```
+
+## The Player
+
+This also includes a Javascript file which uses Javascript XMLHTTPRequests to fetch metadata for the screencasts and inserts a video.js player to a page.
+Depends on JQuery.
