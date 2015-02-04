@@ -139,28 +139,37 @@ def create_index(target_dir):
         f.write(json.dumps(res))
     print "Done."
 
+def create_all(target_dir):
+    with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
+        list = json.loads(f.read())
+    for key in list:
+        build_screencast(key, target_dir)
+
 
 
 
 def parseArgs():
     parser = argparse.ArgumentParser(prog="Screencasts Builder",
-                                     description="Converts videos, copies tracks and downloads, and puts them into a final format for the player",
+                                     description="Converts videos, copies tracks and downloads, and puts them into a final format for the player.",
                                      add_help=False)
     parser.add_argument('--help', action='help')
-    parser.add_argument("--screencast" , "-i", required=False, help="Screencast directory in sources")
+    parser.add_argument("--key" , "-k", required=False, help="Screencast directory in sources")
     parser.add_argument("--targetdir", "-t", required=True, help="The target directory. The output will be created in a subfolder specified via --i")
     parser.add_argument("--create-index", "-c", help="Recreate the screencast index.", action="store_true", default=False)
+    parser.add_argument("--all", "-a", help="Create all. Overwrites the -i option.", action="store_true", default=False)
     options = parser.parse_args()
     return options
 
 
 target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
 opts = parseArgs()
-print opts
-key = opts.screencast
+key = opts.key
 target_dir = opts.targetdir
-if key:
+if opts.all:
+    create_all(target_dir)
+elif key:
     build_screencast(key, target_dir)
+
 if opts.create_index:
     create_index(target_dir)
 
