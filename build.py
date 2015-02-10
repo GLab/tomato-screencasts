@@ -26,18 +26,26 @@ class ScreencastBuilder:
     video_formats = []
     downloads = []
     descriptor_content = {'tracks': [], 'sources': [], 'downloads': []}
+    md_filler = {'tracks': "", 'sources': "", 'downloads': ""}
 
     # key: the key this is referenced to.
     # title: onscreen title of the screencast
     # description: description of the screencast
     # input_video_file: video file to use as source
     # target_dir: the target dir. files will be saved in target_dir/key/ and target_dir/key.json
-    def __init__(self, key, title, description, input_video_file, target_dir):
+    def __init__(self, key, title, description, input_video_file, target_dir, markdown_baseurl=False, create_json=True):
         self.key = key
         self.descriptor_content['title'] = title
         self.descriptor_content['description'] = description
         self.input_video_filename = input_video_file
         self.target_dir = target_dir
+        self.create_markdown = True if markdown_baseurl else False
+        self.markdown_baseurl = markdown_baseurl
+        self.create_json = create_json
+
+        self.md_filler['key'] = self.key
+        self.md_filler['title'] = self.descriptor_content['title']
+        self.md_filler['description'] = self.descriptor_content['description']
 
     #convert the video
     def _create_video_format(self, form):
@@ -46,12 +54,12 @@ class ScreencastBuilder:
         (outputfilename, _) = os.path.splitext(os.path.basename(input))
         outputfilename += (".%s" % form)
         output = os.path.join(self.media_dir, outputfilename)
-        avconv(input, output)
+        #avconv(input, output)
         return outputfilename
 
     #prepare all target directories so that files can be written directly.
     def _prepare_dir(self):
-        self.media_dir = os.path.join(self.target_dir, self.key)
+        self.media_dir = os.path.join(self.target_dir, self.key+'_media')
         assert not os.path.exists(self.media_dir)
         os.makedirs(self.media_dir)
 
@@ -63,7 +71,13 @@ class ScreencastBuilder:
             shutil.copy(track['filename'],os.path.join(self.media_dir, trackfilename))
             desc_entry={'src': trackfilename, 'default': track['default'], 'kind': track['kind']}
             desc_entry.update(track['data'])
+            http_opts = 'src="%(markdown_baseurl)s/%(key)s/%(src)s" kind="%(kind)s"' % {'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'src': trackfilename, 'kind':track['kind']}
+            for o in track['data'].keys():
+                http_opts += ' %(key)s="%(value)s"' % {'key': o, 'value': track['data'][o]}
+            if track['default']:
+                http_opts += ' default'
             self.descriptor_content['tracks'].append(desc_entry)
+            self.md_filler['tracks'] += '<track %(httpopts)s>' % {'httpopts': http_opts}
 
     #copy all downloads to the media directory.
     def _copy_downloads(self):
@@ -72,12 +86,29 @@ class ScreencastBuilder:
             print "Copying download %s" % filename
             shutil.copy(dl['filename'], os.path.join(self.media_dir, filename))
             self.descriptor_content['downloads'].append({'title': dl['title'], 'src': filename})
+            self.md_filler['downloads'] += '<li><a href="%(markdown_baseurl)s/%(key)s/%(filename)s">%(title)s</a></li>' % {'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'filename': filename, 'title': dl['title']}
 
     #write the descriptor file. should be the final action.
     def _write_descriptor(self):
         print "Writing descriptor file"
-        with open(os.path.join(self.target_dir, "%s.json" % key), "w+") as f:
-            f.write(json.dumps(self.descriptor_content))
+
+        if self.create_json:
+            with open(os.path.join(self.target_dir, "%s.json" % self.key), "w+") as f:
+                f.write(json.dumps(self.descriptor_content))
+
+        if self.create_markdown:
+            with open(os.path.join(self.target_dir, "%s.md" % self.key), "w+") as f:
+                f.write("---\n")
+                f.write('layout: screencast\n')
+                f.write('key: "%(key)s"\n' % self.md_filler)
+                f.write('title: "%(title)s"\n' % self.md_filler)
+                f.write('description: "%(description)s"\n' % self.md_filler)
+                f.write("sources: '%(sources)s'\n" % self.md_filler)
+                f.write("tracks: '%(tracks)s'\n" % self.md_filler)
+                f.write('categories: screencasts\n')
+                f.write('---\n\n')
+                f.write("<ul>%(downloads)s</ul>\n" % self.md_filler)
+
         print "Done."
 
 
@@ -107,25 +138,34 @@ class ScreencastBuilder:
         for form in self.video_formats:
             filename = self._create_video_format(form['extension'])
             self.descriptor_content['sources'].append({'type': form['mimetype'], 'src': filename})
+            self.md_filler['sources'] += '<source src="%(markdown_baseurl)s/%(key)s_media/%(filename)s" type="%(mimetype)s" />' % {'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'filename': filename, 'mimetype': form['mimetype']}
         self._copy_tracks()
         self._copy_downloads()
         self._write_descriptor()
 
 
 
-def build_screencast(key, target_dir):
+def build_screencast(key, target_dir, markdown_baseurl, create_json):
     print "Creating '%s' at '%s'" % (key, target_dir)
     screencast_root = os.path.join(basedir, "sources", key)
     with open(os.path.join(screencast_root, "%s.json" % key), "r") as f:
         descriptor = json.loads(f.read())
     video_filename = os.path.join(screencast_root, descriptor['video_file'])
-    builder = ScreencastBuilder(key=key, title=descriptor['title'], description=descriptor['description'], input_video_file=video_filename, target_dir=target_dir)
+    builder = ScreencastBuilder(key=key, title=descriptor['title'], description=descriptor['description'], input_video_file=video_filename, target_dir=target_dir, markdown_baseurl=markdown_baseurl, create_json=create_json)
     for form in target_formats:
         builder.add_video_format(form['extension'], form['mimetype'])
     #TODO: add downloads, tracks
     builder.build()
 
-def create_index(target_dir):
+def create_all(target_dir, markdown_baseurl, create_json):
+    with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
+        list = json.loads(f.read())
+    for key in list:
+        build_screencast(key, target_dir, markdown_baseurl, create_json)
+
+
+
+def create_index(target_dir, markdown_baseurl, create_json):
     print "Creating screencast list..."
     with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
         list = json.loads(f.read())
@@ -135,15 +175,33 @@ def create_index(target_dir):
         with open(os.path.join(screencast_root, "%s.json" % key), "r") as f:
             descriptor = json.loads(f.read())
         res.append({"key": key, "title": descriptor["title"], "description": descriptor["description"]})
-    with open(os.path.join(target_dir, "index.json"), "w+") as f:
-        f.write(json.dumps(res))
-    print "Done."
 
-def create_all(target_dir):
-    with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
-        list = json.loads(f.read())
-    for key in list:
-        build_screencast(key, target_dir)
+    if create_json:
+        with open(os.path.join(target_dir, "index.json"), "w+") as f:
+            f.write(json.dumps(res))
+    if markdown_baseurl:
+        with open(os.path.join(target_dir, "index.html"), "w+") as idx:
+            idx.write("---\n")
+            idx.write("layout: default\n")
+            idx.write("title: Screencasts\n")
+            idx.write("category: about\n")
+            idx.write("---\n\n")
+            idx.write("<h1>Screencasts</h1>")
+            idx.write("{% include screencast_list.html %}")
+        with open(os.path.join(target_dir, "_data", "screencasts.yml"), "w+") as data:
+            for scr in res:
+                data.write("- key: %(key)s\n" % scr)
+                data.write("  title: %(title)s\n" % scr)
+                data.write("  description: %(description)s\n" % scr)
+                data.write("  url: %(key)s\n" % {'key': scr['key']})
+        with open(os.path.join(target_dir, "_includes", "screencast_list.html"), "w+") as incl:
+            incl.write('<ul>')
+            incl.write('{% for screencast in site.data.screencasts %}')
+            incl.write('<li><strong><a href="%(baseurl)s/{{screencast.url}}" >{{ screencast.title }}</a></strong><br/>' % {'baseurl': markdown_baseurl})
+            incl.write(scr['description'])
+            incl.write('{% endfor %}')
+            incl.write('</ul>')
+    print "Done."
 
 
 
@@ -157,6 +215,8 @@ def parseArgs():
     parser.add_argument("--targetdir", "-t", required=True, help="The target directory. The output will be created in a subfolder specified via --i")
     parser.add_argument("--create-index", "-c", help="Recreate the screencast index.", action="store_true", default=False)
     parser.add_argument("--all", "-a", help="Create all. Overwrites the -i option.", action="store_true", default=False)
+    parser.add_argument("--markdown", "-m", help="Also create Markdown files for a jekyll project. Set media root directory for URL generating (needs the KEY_media and KEY.md files to be in this folder)", default=False)
+    parser.add_argument("--json", "-j", help="Also create JSON files.", action="store_true", default=False)
     options = parser.parse_args()
     return options
 
@@ -165,11 +225,19 @@ target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
 opts = parseArgs()
 key = opts.key
 target_dir = opts.targetdir
+markdown_baseurl = "/"+opts.markdown
+create_json = opts.json
+
 if opts.all:
-    create_all(target_dir)
+    create_all(target_dir, markdown_baseurl, create_json)
 elif key:
-    build_screencast(key, target_dir)
+    build_screencast(key, target_dir, markdown_baseurl, create_json)
+if opts.all or key:
+    os.makedirs(os.path.join(target_dir, "_layouts"))
+    shutil.copy(os.path.join(basedir, "markdown_deps", "layout.html"), os.path.join(target_dir, "_layouts", "screencast.html"))
 
 if opts.create_index:
-    create_index(target_dir)
+    os.makedirs(os.path.join(target_dir, "_includes"))
+    os.makedirs(os.path.join(target_dir, "_data"))
+    create_index(target_dir, markdown_baseurl, create_json)
 
