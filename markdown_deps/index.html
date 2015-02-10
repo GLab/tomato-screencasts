@@ -3,25 +3,5 @@ layout: default
 title: Screencasts
 category: about
 ---
-
-<div class="row"><div class="col-md-8 col-md-offset-2">
-
-<h1>News</h1>
-
-{{ pagination }}
-
-{% for post in paginator.screencasts %}
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ post.title }}</h3>
-  </div>
-  <div class="panel-body">
-  {{ post.excerpt | markdownify }}
-  </div>
-  
-  <div class="panel-footer">Posted by: {{ post.autor }}, {{ post.date | date_to_string }}</div>
-</div>
-{% endfor %}
-
-{{ pagination }}
-</div></div>
+<h1>Screencasts</h1>
+{% include screencast_list.html %}

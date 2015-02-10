@@ -180,14 +180,7 @@ def create_index(target_dir, markdown_baseurl, create_json):
         with open(os.path.join(target_dir, "index.json"), "w+") as f:
             f.write(json.dumps(res))
     if markdown_baseurl:
-        with open(os.path.join(target_dir, "index.html"), "w+") as idx:
-            idx.write("---\n")
-            idx.write("layout: default\n")
-            idx.write("title: Screencasts\n")
-            idx.write("category: about\n")
-            idx.write("---\n\n")
-            idx.write("<h1>Screencasts</h1>")
-            idx.write("{% include screencast_list.html %}")
+        shutil.copy(os.path.join(basedir, "markdown_deps", "index.html"), os.path.join(target_dir, "index.html"))
         with open(os.path.join(target_dir, "_data", "screencasts.yml"), "w+") as data:
             for scr in res:
                 data.write("- key: %(key)s\n" % scr)
