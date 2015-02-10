@@ -27,9 +27,10 @@ The `sources` directory contains an `index.json` file which lists all keys in th
 Depends on the avconv command to be installed on the computer.
 usage: build.py [-i KEY] [-c] -t TARGET_DIRECTORY
 
-## the output of the builder
+## json
 
-for each screencast key, it creates a folder named `key` and a descriptor file named `key.json`. The descriptor is of the format:
+Use the `--json` option to produce JSON metadata files.
+For each screencast `key`, it creates a folder named `key_media` and a descriptor file named `key.json`. The descriptor is of the format:
 ```
 {
   "title": "Basic Usage",
@@ -56,12 +57,13 @@ There is a `index.json` file next to all other files, which is a sorted list of 
 ]
 ```
 
-## The Player
+## Jekyll
 
-This also includes a Javascript file which uses Javascript XMLHTTPRequests to fetch metadata for the screencasts and inserts a [video.js](https://videojs.com) player to a page.
-Depends on JQuery.
-As reference URL, this script alway uses the index.json file. Usage:
-* `get_list(index_url)` to get the list as in `index.json`
-* `get_metadata(index_url, key)` to get the metadata of the screencast indentified by `key`
-* `insert_player(index_url, key, parent, width, height, video_js_options, video_ready_callback)` to insert a player.
- `height` and `width` may be empty or a number of pixels. `video_js_options` are [video.js options](https://github.com/videojs/video.js/blob/stable/docs/guides/options.md). `video_ready_callback` is called when video.js has the video ready. `parent` is a JQuery DOM element which is already inserted in the document tree.
+build.py can also output files to include into a jekyll project. Use the `--markdown` option.
+Example usage:
+```
+build.py -acm screencastss -t ~/screencast_out
+```
+creates links between files assuming the screencast root is in http://screencastss.
+Move the `_includes`, `_layouts`, and `_data` folders where they belong, and the rest into your `/screencastss` directory.
+Then you can `{% include screencast_list.html %}`.
