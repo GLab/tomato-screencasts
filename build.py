@@ -105,7 +105,6 @@ class ScreencastBuilder:
                 f.write('description: "%(description)s"\n' % self.md_filler)
                 f.write("sources: '%(sources)s'\n" % self.md_filler)
                 f.write("tracks: '%(tracks)s'\n" % self.md_filler)
-                f.write('categories: screencasts\n')
                 f.write('---\n\n')
                 f.write("<ul>%(downloads)s</ul>\n" % self.md_filler)
 
