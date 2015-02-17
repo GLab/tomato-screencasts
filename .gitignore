@@ -15,6 +15,7 @@ docs_build
 *.torrent
 *.qcow2
 .idea
+*.cptx_lock
 
 web-old
 backend-old
