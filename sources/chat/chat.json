@@ -1,0 +1,24 @@
+{
+  "title": "Chat Tutorial",
+  "description": "Teaches the basics about how to use ToMaTo's editor.",
+  "video_file": "chat.f4v",
+  "tracks": [],
+  "downloads": [
+    {
+        "title": "Python Installer Archive",
+		"filename": "install_python.tar.gz"
+    },
+    {
+        "title": "Chat Installer Archive",
+		"filename": "chat_client.tar.gz"
+    },
+    {
+        "title": "Repy Image: Chat Monitor",
+		"filename": "chat_monitor.repy"
+    },
+    {
+        "title": "Repy Image: Chat Sender",
+		"filename": "chat_sender.repy"
+    },
+  ]
+}
