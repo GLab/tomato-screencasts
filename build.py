@@ -74,15 +74,20 @@ class ScreencastBuilder:
 		self.md_filler['title'] = self.descriptor_content['title']
 		self.md_filler['description'] = self.descriptor_content['description']
 
-	# convert the video to the specific format.
-	def _create_video_format(self, form):
-		print "Converting to %s" % form
-		input = self.input_video_filename
-		(outputfilename, _) = os.path.splitext(os.path.basename(input))
-		outputfilename += (".%s" % form)
-		output = os.path.join(self.media_dir, outputfilename)
-		avconv(input, output)
-		return outputfilename
+	# convert to all video formats
+	def create_video_formats(self):
+		for form in self.video_formats:
+			print "Converting to %s" % form
+			input = self.input_video_filename
+			(outputfilename, _) = os.path.splitext(os.path.basename(input))
+			outputfilename += (".%s" % form)
+			output = os.path.join(self.media_dir, outputfilename)
+			avconv(input, output)
+			self.descriptor_content['sources'].append({'type': form['mimetype'], 'src': outputfilename})
+			self.md_filler[
+				'sources'] += '<source src="%(markdown_baseurl)s/%(key)s_media/%(filename)s" type="%(mimetype)s" />' % {
+				'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'filename': outputfilename,
+				'mimetype': form['mimetype']}
 
 	#prepare all target directories so that files can be written directly.
 	def _prepare_dir(self):
@@ -189,13 +194,7 @@ class ScreencastBuilder:
 	# This is the only public function which will do actual disk actions.
 	def build(self):
 		self._prepare_dir()
-		for form in self.video_formats:
-			filename = self._create_video_format(form['extension'])
-			self.descriptor_content['sources'].append({'type': form['mimetype'], 'src': filename})
-			self.md_filler[
-				'sources'] += '<source src="%(markdown_baseurl)s/%(key)s_media/%(filename)s" type="%(mimetype)s" />' % {
-				'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'filename': filename,
-				'mimetype': form['mimetype']}
+		self._create_video_formats()
 		self._copy_tracks()
 		self._copy_downloads()
 		self._copy_poster()
