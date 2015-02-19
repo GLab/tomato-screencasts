@@ -54,7 +54,7 @@ class ScreencastBuilder:
         (outputfilename, _) = os.path.splitext(os.path.basename(input))
         outputfilename += (".%s" % form)
         output = os.path.join(self.media_dir, outputfilename)
-        avconv(input, output)
+        #avconv(input, output)
         return outputfilename
 
     #prepare all target directories so that files can be written directly.
@@ -71,7 +71,7 @@ class ScreencastBuilder:
             shutil.copy(track['filename'],os.path.join(self.media_dir, trackfilename))
             desc_entry={'src': trackfilename, 'default': track['default'], 'kind': track['kind']}
             desc_entry.update(track['data'])
-            http_opts = 'src="%(markdown_baseurl)s/%(key)s/%(src)s" kind="%(kind)s"' % {'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'src': trackfilename, 'kind':track['kind']}
+            http_opts = 'src="%(markdown_baseurl)s/%(key)s_media/%(src)s" kind="%(kind)s"' % {'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'src': trackfilename, 'kind':track['kind']}
             for o in track['data'].keys():
                 http_opts += ' %(key)s="%(value)s"' % {'key': o, 'value': track['data'][o]}
             if track['default']:
@@ -156,7 +156,17 @@ def build_screencast(key, target_dir, markdown_baseurl, create_json):
     for form in target_formats:
         builder.add_video_format(form['extension'], form['mimetype'])
     for dl in descriptor['downloads']:
-        builder.add_downloadable_content(dl['title'],os.path.join(screencast_root,dl['filename']))
+        builder.add_downloadable_content(dl['title'], os.path.join(screencast_root,dl['filename']))
+    for track in descriptor['tracks']:
+        assert 'kind' in track and 'filename' in track
+        kind = track['kind']
+        filename = os.path.join(screencast_root,track['filename'])
+        default = track['default'] if 'default' in track else False
+        del track['kind']
+        del track['filename']
+        if 'default in track':
+            del track['default']
+        builder.add_track(kind, track, filename, default)
     #TODO: add tracks
     builder.build()
 
