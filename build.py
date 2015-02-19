@@ -106,6 +106,8 @@ class ScreencastBuilder:
                 f.write("sources: '%(sources)s'\n" % self.md_filler)
                 f.write("tracks: '%(tracks)s'\n" % self.md_filler)
                 f.write('---\n\n')
+                if self.md_filler['downloads']:
+                    f.write("<br/>Used Files:\n")
                 f.write("<ul>%(downloads)s</ul>\n" % self.md_filler)
 
         print "Done."
@@ -153,7 +155,9 @@ def build_screencast(key, target_dir, markdown_baseurl, create_json):
     builder = ScreencastBuilder(key=key, title=descriptor['title'], description=descriptor['description'], input_video_file=video_filename, target_dir=target_dir, markdown_baseurl=markdown_baseurl, create_json=create_json)
     for form in target_formats:
         builder.add_video_format(form['extension'], form['mimetype'])
-    #TODO: add downloads, tracks
+    for dl in descriptor['downloads']:
+        builder.add_downloadable_content(dl['title'],os.path.join(screencast_root,dl['filename']))
+    #TODO: add tracks
     builder.build()
 
 def create_all(target_dir, markdown_baseurl, create_json):
@@ -217,14 +221,14 @@ target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
 opts = parseArgs()
 key = opts.key
 target_dir = opts.targetdir
-markdown_baseurl = "/"+opts.markdown
+markdown_baseurl = (opts.markdown if opts.markdown.startswith("/") else "/"+opts.markdown) if opts.markdown else None
 create_json = opts.json
 
 if opts.all:
     create_all(target_dir, markdown_baseurl, create_json)
 elif key:
     build_screencast(key, target_dir, markdown_baseurl, create_json)
-if opts.all or key:
+if (opts.all or key) and markdown_baseurl:
     os.makedirs(os.path.join(target_dir, "_layouts"))
     shutil.copy(os.path.join(basedir, "markdown_deps", "layout.html"), os.path.join(target_dir, "_layouts", "screencast.html"))
 
