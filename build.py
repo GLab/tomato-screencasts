@@ -54,7 +54,7 @@ class ScreencastBuilder:
         (outputfilename, _) = os.path.splitext(os.path.basename(input))
         outputfilename += (".%s" % form)
         output = os.path.join(self.media_dir, outputfilename)
-        #avconv(input, output)
+        avconv(input, output)
         return outputfilename
 
     #prepare all target directories so that files can be written directly.
