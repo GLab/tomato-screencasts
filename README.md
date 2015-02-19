@@ -15,8 +15,18 @@ The descriptor is of the format:
   "title": "Human-Readable screencast title",
   "description": "description text for the screencast. What is this about?",
   "video_file": "filename of the raw video, which will be converted to the required formats",
-  "tracks": [], #undefined. Will include some tracks like chapters or subtitles
-  "downloads": [] #undefined. Will include files used by the tutorial for the user to download
+  "poster": "filename of the poster, i.e., the picture to be displayed before the user presses the play button",
+  "tracks": [
+              {"filename": "example.srt",
+               "kind": "subtitles",
+               "label": "Example",
+               "srclang": "en",
+               "default": false}
+             ],
+  "downloads": [
+              {"title": "Example File",
+               "filename": "example.tar.gz"}
+             ]
 }
 ```
 
@@ -24,9 +34,20 @@ The key `index` may not be used.
 The `sources` directory contains an `index.json` file which lists all keys in their desired order.
 
 ## build.py
-Depends on the avconv command to be installed on the computer.
-usage: build.py [-i KEY] [-c] -t TARGET_DIRECTORY
+Needs the avconv command to be installed on the computer.
+example usages: 
+```
+# build the screencast in the 'basic' directory and create json files
+build.py -k basic -j -t /home/user/screencasts
 
+# build all screencasts and create an index file, everything to be used in a jekyll project
+# e.g., the basic screencast shall be available as http://127.0.0.1:4000/screencasts/basic
+# the user will have to put files in _* directories where they need to be put, the rest in the 'screencasts' folders
+build.py -a -c -m screencasts -t /home/user/screencasts
+
+# display help
+build.py --help
+```
 ## json
 
 Use the `--json` option to produce JSON metadata files.
