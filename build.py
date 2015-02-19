@@ -8,10 +8,25 @@ import json
 import argparse
 import inspect
 
+
+# base dir of the source stuff. should be the directory of this file
 basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+# target formats for the main video
+target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
+
+# debug mode. can be changed via an argument
 debug = False
 
 
+
+
+
+
+
+
+
+# command to convert the video file.
 def avconv(inputfilename, outputfilename):
 	cmd = ['avconv', '-i', inputfilename, outputfilename]
 	if debug:
@@ -25,6 +40,13 @@ def avconv(inputfilename, outputfilename):
 	return errcode
 
 
+
+
+# this is meant to build a single screencast.
+# first, create an instance.
+# then, add formats, tracks, downloadable files, and set a poster. This will not change any
+# do NOT use any function which starts with a _   -- these are private ones.
+# then, build it using the build function.
 class ScreencastBuilder:
 	tracks = []
 	video_formats = []
@@ -52,7 +74,7 @@ class ScreencastBuilder:
 		self.md_filler['title'] = self.descriptor_content['title']
 		self.md_filler['description'] = self.descriptor_content['description']
 
-	# convert the video
+	# convert the video to the specific format.
 	def _create_video_format(self, form):
 		print "Converting to %s" % form
 		input = self.input_video_filename
@@ -68,7 +90,8 @@ class ScreencastBuilder:
 		assert not os.path.exists(self.media_dir)
 		os.makedirs(self.media_dir)
 
-	#copy all tracks to the media directory
+	# Copy all tracks to the media directory.
+	# Add it to md_filler and descriptor_content
 	def _copy_tracks(self):
 		for track in self.tracks:
 			trackfilename = os.path.basename(track['filename'])
@@ -85,7 +108,8 @@ class ScreencastBuilder:
 			self.descriptor_content['tracks'].append(desc_entry)
 			self.md_filler['tracks'] += '<track %(httpopts)s>' % {'httpopts': http_opts}
 
-	#copy all downloads to the media directory.
+	# Copy all downloads to the media directory.
+	# Add it to md_filler and descriptor_content
 	def _copy_downloads(self):
 		for dl in self.downloads:
 			filename = os.path.basename(dl['filename'])
@@ -96,6 +120,8 @@ class ScreencastBuilder:
 				'downloads'] += '<li><a href="%(markdown_baseurl)s/%(key)s_media/%(filename)s">%(title)s</a></li>' % {
 				'markdown_baseurl': self.markdown_baseurl, 'key': self.key, 'filename': filename, 'title': dl['title']}
 
+	# Copy the poster to the media directory.
+	# Add it to md_filler and descriptor_content
 	def _copy_poster(self):
 		if self.poster:
 			filename = os.path.basename(self.poster)
@@ -105,7 +131,8 @@ class ScreencastBuilder:
 																					  'key': self.key,
 																					  'filename': filename}
 
-	#write the descriptor file. should be the final action.
+	# Write the descriptor files.
+	# Should be the final action of build, since it requires md_filler and descriptor_content to be complete.
 	def _write_descriptor(self):
 		print "Writing descriptor file"
 
@@ -134,7 +161,7 @@ class ScreencastBuilder:
 	# add a track to the screencast
 	# kind: kind of the track
 	# data: additional HTML5 data. Should not contain the keys src, default, kind
-	# filename: src of the track
+	# filename: absolute source file path of the track
 	# default: if True, set track as default in player
 	def add_track(self, kind, data, filename, default):
 		sub = {'kind': kind, 'data': data, 'filename': filename, 'default': default}
@@ -146,13 +173,20 @@ class ScreencastBuilder:
 	def add_video_format(self, extension, mimetype):
 		self.video_formats.append({'mimetype': mimetype, 'extension': extension})
 
+	# add a file for the viewer to download.
+	# title: link title
+	# filename: absolute path to the file
 	def add_downloadable_content(self, title, filename):
 		self.downloads.append({'title': title, 'filename': filename})
 
+	# Set the poster file.
+	# filename: absolute path of the source file
 	def set_poster(self, filename):
 		self.poster = filename
 
 	# convert videos, copy files, etc.
+	# i.e., create actual output.
+	# This is the only public function which will do actual disk actions.
 	def build(self):
 		self._prepare_dir()
 		for form in self.video_formats:
@@ -168,6 +202,9 @@ class ScreencastBuilder:
 		self._write_descriptor()
 
 
+# build the screencast KEY to TARGET_DIR
+# reads the descriptor file of the screencast,
+#  then uses a ScreencastBuilder to build it.
 def build_screencast(key, target_dir, markdown_baseurl, create_json):
 	print "Creating '%s' at '%s'" % (key, target_dir)
 	screencast_root = os.path.join(basedir, "sources", key)
@@ -196,14 +233,14 @@ def build_screencast(key, target_dir, markdown_baseurl, create_json):
 	# TODO: add tracks
 	builder.build()
 
-
+# iterate over all screencasts in index.json, and build all of them individually using the build_screencast function
 def create_all(target_dir, markdown_baseurl, create_json):
 	with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
 		list = json.loads(f.read())
 	for key in list:
 		build_screencast(key, target_dir, markdown_baseurl, create_json)
 
-
+# create index files (i.e., a list of all screencasts)
 def create_index(target_dir, markdown_baseurl, create_json):
 	print "Creating screencast list..."
 	with open(os.path.join(basedir, "sources", "index.json"), "r") as f:
@@ -219,6 +256,8 @@ def create_index(target_dir, markdown_baseurl, create_json):
 		with open(os.path.join(target_dir, "index.json"), "w+") as f:
 			f.write(json.dumps(res))
 	if markdown_baseurl:
+		os.makedirs(os.path.join(target_dir, "_includes"))
+		os.makedirs(os.path.join(target_dir, "_data"))
 		shutil.copy(os.path.join(basedir, "markdown_deps", "index.html"), os.path.join(target_dir, "index.html"))
 		with open(os.path.join(target_dir, "_data", "screencasts.yml"), "w+") as data:
 			for scr in res:
@@ -238,9 +277,17 @@ def create_index(target_dir, markdown_baseurl, create_json):
 	print "Done."
 
 
+
+
+
+
+
+
+# The following is to parse the command line arguments, and call the respective functions
+
 def parseArgs():
 	parser = argparse.ArgumentParser(prog="Screencasts Builder",
-									 description="Converts videos, copies tracks and downloads, and puts them into a final format for the player.",
+									 description="Converts video files, copies tracks and downloads, and puts them into a final format for the player.",
 									 add_help=False)
 	parser.add_argument('--help', action='help')
 	parser.add_argument("--key", "-k", required=False, help="Screencast directory in sources")
@@ -258,7 +305,7 @@ def parseArgs():
 	return options
 
 
-target_formats = [{'extension': "webm", 'mimetype': "video/webm"}]
+# interpret arguments to variables
 opts = parseArgs()
 debug = opts.debug
 key = opts.key
@@ -266,17 +313,18 @@ target_dir = opts.targetdir
 markdown_baseurl = (opts.markdown if opts.markdown.startswith("/") else "/" + opts.markdown) if opts.markdown else None
 create_json = opts.json
 
+
+# build screencasts
 if opts.all:
 	create_all(target_dir, markdown_baseurl, create_json)
 elif key:
 	build_screencast(key, target_dir, markdown_baseurl, create_json)
-if (opts.all or key) and markdown_baseurl:
+if (opts.all or key) and markdown_baseurl: #i.e. build at least one screencast, and have markdown output enabled
 	os.makedirs(os.path.join(target_dir, "_layouts"))
 	shutil.copy(os.path.join(basedir, "markdown_deps", "layout.html"),
 				os.path.join(target_dir, "_layouts", "screencast.html"))
 
-if opts.create_index:
-	os.makedirs(os.path.join(target_dir, "_includes"))
-	os.makedirs(os.path.join(target_dir, "_data"))
-	create_index(target_dir, markdown_baseurl, create_json)
 
+# create the index files
+if opts.create_index:
+	create_index(target_dir, markdown_baseurl, create_json)
