@@ -2,6 +2,10 @@
 
 This project includes the source files and final output of the screencasts which will be used to demonstrate ToMaTo.
 
+## Please reade before contributing
+
+I don't commit big binary files (i.e., captivate projects and their output) regularly. Please contact @t-gerhard before making actual changes to avoid conflicts
+
 ## the sources directory
 
 Each screencast has a subdirectory, and is identified by its key.
