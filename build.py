@@ -75,12 +75,12 @@ class ScreencastBuilder:
 		self.md_filler['description'] = self.descriptor_content['description']
 
 	# convert to all video formats
-	def create_video_formats(self):
+	def _create_video_formats(self):
 		for form in self.video_formats:
-			print "Converting to %s" % form
+			print "Converting to %s" % form['extension']
 			input = self.input_video_filename
 			(outputfilename, _) = os.path.splitext(os.path.basename(input))
-			outputfilename += (".%s" % form)
+			outputfilename += (".%s" % form['extension'])
 			output = os.path.join(self.media_dir, outputfilename)
 			avconv(input, output)
 			self.descriptor_content['sources'].append({'type': form['mimetype'], 'src': outputfilename})
