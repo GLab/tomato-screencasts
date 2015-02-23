@@ -2,6 +2,10 @@
 
 This project includes the source files and final output of the screencasts which will be used to demonstrate ToMaTo.
 
+## Please reade before contributing
+
+I don't commit big binary files (i.e., captivate projects and their output) regularly. Please contact @t-gerhard before making actual changes to avoid conflicts
+
 ## the sources directory
 
 Each screencast has a subdirectory, and is identified by its key.
@@ -34,8 +38,13 @@ The key `index` may not be used.
 The `sources` directory contains an `index.json` file which lists all keys in their desired order.
 
 ## build.py
-Needs the avconv command to be installed on the computer.
-example usages: 
+
+This creates JSON and Jekyll files to integrate these into a website.
+It also converts the source video file into the target formats (currently hardcoded in the script)
+
+It needs the avconv command to be installed on the computer.
+
+Example usages: 
 ```
 # build the screencast in the 'basic' directory and create json files
 build.py -k basic -j -t /home/user/screencasts
