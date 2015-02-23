@@ -3,6 +3,14 @@
   "description": "Create and start your first topology.",
   "video_file": "basic.f4v",
   "poster": "poster.png",
-  "tracks": [],
+  "tracks": [
+    {
+      "filename": "english.srt",
+      "kind": "subtitles",
+      "label": "English",
+      "srclang": "en",
+      "default": false
+    }
+  ],
   "downloads": []
 }
