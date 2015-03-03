@@ -1,0 +1,38 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE project PUBLIC "-//audacityproject-1.3.0//DTD//EN" "http://audacity.sourceforge.net/xml/audacityproject-1.3.0.dtd" >
+<project xmlns="http://audacity.sourceforge.net/xml/" projname="166_data" version="1.3.0" audacityversion="2.0.6" sel0="6.2926077098" sel1="6.2926077098" vpos="0" h="0.0000000000" zoom="86.1328125000" rate="44100.0" snapto="off" selectionformat="hh:mm:ss + milliseconds">
+	<tags/>
+	<wavetrack name="Audio Track" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="93696">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000a5f.au" len="93696" min="-0.146496" max="0.134802" rms="0.019199"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="2.71673469">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="135168">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000b99.au" len="135168" min="-0.145727" max="0.162279" rms="0.020977"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="1" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="5.89786848">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="410112">
+				<waveblock start="0">
+					<simpleblockfile filename="e000079e.au" len="262144" min="-0.266101" max="0.303918" rms="0.034287"/>
+				</waveblock>
+				<waveblock start="262144">
+					<simpleblockfile filename="e0000e92.au" len="147968" min="-0.18284" max="0.198556" rms="0.023508"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+</project>

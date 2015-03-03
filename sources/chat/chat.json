@@ -1,7 +1,8 @@
 {
   "title": "Chat Tutorial",
-  "description": "Teaches the basics about how to use ToMaTo's editor.",
+  "description": "Demonstrates the most important ToMaTo functions using an example application.",
   "video_file": "chat.f4v",
+  "poster": "poster.png",
   "tracks": [],
   "downloads": [
     {
